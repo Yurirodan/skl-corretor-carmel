@@ -5,7 +5,7 @@
     const SUPABASE_ANON_KEY = "sb_publishable_mqppAm9n79xl6rYafzXyNQ_mGVoX3Vd";
     const EMPREENDIMENTO_SLUG = "skl-demo";
     const ORIGEM = "app_corretor";
-    const APP_VERSION = "3.0.18";
+    const APP_VERSION = "3.0.19";
     if ($("brokerAppVersion")) $("brokerAppVersion").textContent = APP_VERSION;
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
