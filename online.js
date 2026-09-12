@@ -5,7 +5,7 @@
     const SUPABASE_ANON_KEY = "sb_publishable_mqppAm9n79xl6rYafzXyNQ_mGVoX3Vd";
     const EMPREENDIMENTO_SLUG = "skl-demo";
     const ORIGEM = "app_corretor";
-    const APP_VERSION = "3.0.17";
+    const APP_VERSION = "3.0.18";
     if ($("brokerAppVersion")) $("brokerAppVersion").textContent = APP_VERSION;
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
@@ -85,20 +85,50 @@
         const {data: emp, error: empError} = await sb.from("empreendimentos").select("id").eq("slug", EMPREENDIMENTO_SLUG).maybeSingle();
         if (empError || !emp) throw new Error("Empreendimento não encontrado ou sem acesso.");
         const {data: userData} = await sb.auth.getUser();
-        const {data: vinculo, error: vinculoError} = await sb.from("empreendimento_usuarios").select("papel, expira_em").eq("empreendimento_id", emp.id).eq("usuario_id", userData.user.id).eq("ativo", true).maybeSingle();
+        const {data: vinculo, error: vinculoError} = await sb.from("empreendimento_usuarios").select("papel, expira_em, senha_temporaria").eq("empreendimento_id", emp.id).eq("usuario_id", userData.user.id).eq("ativo", true).maybeSingle();
         if (vinculoError || !vinculo || vinculo.papel !== "corretor") {
             throw new Error("Este acesso não pertence a um corretor.");
         }
         if (vinculo.expira_em && new Date(vinculo.expira_em).getTime() < Date.now()) {
             throw new Error(`Seu acesso expirou em ${new Date(vinculo.expira_em).toLocaleString("pt-BR")}. Fale com a central.`);
         }
-        return emp.id;
+        return {id: emp.id, senhaTemporaria: Boolean(vinculo.senha_temporaria)};
+    }
+    const forcePasswordDialog = $("forcePasswordDialog");
+    function pedirTrocaSenha() {
+        return new Promise(resolve => {
+            setMessage($("forcePasswordMessage"), "");
+            $("forcePasswordInput").value = "";
+            $("forcePasswordConfirmInput").value = "";
+            forcePasswordDialog.showModal();
+            const onCancel = event => event.preventDefault();
+            forcePasswordDialog.addEventListener("cancel", onCancel);
+            $("submitForcePasswordButton").onclick = async () => {
+                const senha = $("forcePasswordInput").value;
+                const confirmacao = $("forcePasswordConfirmInput").value;
+                if (senha.length < 6) return setMessage($("forcePasswordMessage"), "A senha deve ter pelo menos 6 caracteres.");
+                if (senha !== confirmacao) return setMessage($("forcePasswordMessage"), "As senhas não coincidem.");
+                try {
+                    const {error: updateError} = await sb.auth.updateUser({password: senha});
+                    if (updateError) throw updateError;
+                    const {error: rpcError} = await sb.rpc("marcar_senha_trocada", {p_empreendimento_id: empreendimentoId});
+                    if (rpcError) throw rpcError;
+                    forcePasswordDialog.removeEventListener("cancel", onCancel);
+                    forcePasswordDialog.close();
+                    resolve();
+                } catch (error) {
+                    setMessage($("forcePasswordMessage"), traduzErro(error.message));
+                }
+            };
+        });
     }
     async function restoreSession() {
         const {data: data} = await sb.auth.getSession();
         if (!data?.session) return showLogin();
         try {
-            empreendimentoId = await verificarAcesso();
+            const acesso = await verificarAcesso();
+            empreendimentoId = acesso.id;
+            if (acesso.senhaTemporaria) await pedirTrocaSenha();
             enterApp();
         } catch (error) {
             await sb.auth.signOut();
@@ -168,8 +198,10 @@
                 password: $("brokerPasswordInput").value
             });
             if (loginError) throw loginError;
-            empreendimentoId = await verificarAcesso();
+            const acesso = await verificarAcesso();
+            empreendimentoId = acesso.id;
             $("brokerPasswordInput").value = "";
+            if (acesso.senhaTemporaria) await pedirTrocaSenha();
             enterApp();
         } catch (error) {
             await sb.auth.signOut();
@@ -195,7 +227,9 @@
                 password: password
             });
             if (loginError) throw loginError;
-            empreendimentoId = await verificarAcesso();
+            const acesso = await verificarAcesso();
+            empreendimentoId = acesso.id;
+            if (acesso.senhaTemporaria) await pedirTrocaSenha();
             enterApp();
         } catch (error) {
             setMessage($("brokerActivationMessage"), traduzErro(error.message));

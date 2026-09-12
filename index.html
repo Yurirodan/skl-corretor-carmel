@@ -256,6 +256,17 @@
       </div>
     </dialog>
 
+    <dialog id="forcePasswordDialog" class="sheet-dialog">
+      <div class="dialog-body">
+        <span class="eyebrow">PRIMEIRO ACESSO</span><h2>Troque sua senha</h2>
+        <p>Sua conta foi criada com uma senha padrão. Defina uma senha só sua para continuar.</p>
+        <label><span>Nova senha</span><input id="forcePasswordInput" type="password" autocomplete="new-password" required minlength="6" /></label>
+        <label><span>Confirme a nova senha</span><input id="forcePasswordConfirmInput" type="password" autocomplete="new-password" required minlength="6" /></label>
+        <button id="submitForcePasswordButton" class="primary-button full-width" type="button">Salvar senha e continuar</button>
+        <div id="forcePasswordMessage" class="auth-message" hidden></div>
+      </div>
+    </dialog>
+
     <dialog id="installDialog" class="install-dialog">
       <form method="dialog">
         <button class="close-button" aria-label="Fechar">×</button>
