@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0C3E4A" />
+    <meta name="description" content="Localizador comercial de quadras e lotes do Carmel Beach Residence." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Carmel Corretor" />
+    <title>Carmel Beach Residence — Corretor</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <section id="authView" class="auth-view">
+      <div class="auth-brand"><img src="assets/logo-full.png" alt="Carmel Beach Residence" /></div>
+      <form id="brokerLoginForm" class="auth-card">
+        <span class="eyebrow">ACESSO DO CORRETOR</span>
+        <h1>Entrar na demonstração</h1>
+        <p>Consulte as informações oficiais atualizadas pela Central de Vendas.</p>
+        <label><span>E-mail</span><input id="brokerEmailInput" type="email" autocomplete="username" required /></label>
+        <label><span>Senha</span><input id="brokerPasswordInput" type="password" autocomplete="current-password" required /></label>
+        <button class="primary-button" type="submit">Entrar</button>
+        <button id="showBrokerActivation" class="text-button" type="button">Primeiro acesso com convite</button>
+        <div id="brokerLoginMessage" class="auth-message" hidden></div>
+      </form>
+      <form id="brokerActivationForm" class="auth-card" hidden>
+        <span class="eyebrow">PRIMEIRO ACESSO</span><h1>Crie seu acesso</h1>
+        <label><span>Código do convite</span><input id="brokerInviteInput" autocomplete="one-time-code" required /></label>
+        <label><span>Seu e-mail</span><input id="brokerNewEmail" type="email" autocomplete="username" required /></label>
+        <label><span>Crie sua senha</span><input id="brokerNewPassword" type="password" autocomplete="new-password" required minlength="6" /></label>
+        <button class="primary-button" type="submit">Ativar conta</button>
+        <button class="text-button back-auth" type="button">Voltar</button>
+        <div id="brokerActivationMessage" class="auth-message" hidden></div>
+      </form>
+      <p class="auth-footer">CARMEL BEACH RESIDENCE</p>
+    </section>
+    <div id="app">
+      <header class="app-header">
+        <div class="brand">
+          <img src="assets/logo-symbol.png" alt="Símbolo Carmel Beach Residence" />
+          <div>
+            <span class="brand-kicker">BEACH</span>
+            <strong>CARMEL</strong>
+            <span class="brand-subtitle">RESIDENCE</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="savedButton" class="header-button" type="button" aria-label="Abrir favoritos e histórico">
+            <span aria-hidden="true">★</span><span class="header-button-label">Salvos</span>
+          </button>
+          <button id="mapa3dButton" class="header-button" type="button" aria-label="Ver planta 3D interativa" hidden>
+            <span aria-hidden="true">◈</span><span class="header-button-label">Planta 3D</span>
+          </button>
+          <button id="commercialButton" class="header-button" type="button" aria-label="Abrir minha conta">
+            <span aria-hidden="true">●</span><span class="header-button-label">Conta</span>
+          </button>
+          <button id="installButton" class="header-button" type="button" hidden aria-label="Instalar aplicativo">
+            <span aria-hidden="true">↓</span><span class="header-button-label">Instalar</span>
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <div id="map" role="application" aria-label="Mapa dos lotes"></div>
+
+        <div class="map-legend" aria-hidden="true">
+          <span><i class="dot disponivel"></i>Disponível</span>
+          <span><i class="dot reservado"></i>Reservado</span>
+          <span><i class="dot vendido"></i>Vendido</span>
+          <span><i class="dot bloqueado"></i>Bloqueado</span>
+        </div>
+
+        <section class="search-card" aria-label="Pesquisa de lote">
+          <div class="search-heading">
+            <div>
+              <span class="eyebrow">LOCALIZADOR DO CORRETOR</span>
+              <h1>Encontre um lote</h1>
+            </div>
+            <button id="showAllButton" class="text-button" type="button">Ver todos</button>
+          </div>
+
+          <form id="lotSearchForm" class="search-form">
+            <label>
+              <span>Quadra</span>
+              <select id="quadraSelect" required aria-label="Selecione a quadra">
+                <option value="">Selecione</option>
+              </select>
+            </label>
+            <label>
+              <span>Lote</span>
+              <select id="loteSelect" required disabled aria-label="Selecione o lote">
+                <option value="">Selecione</option>
+              </select>
+            </label>
+            <button class="primary-button" type="submit"><span aria-hidden="true">⌖</span>Localizar</button>
+          </form>
+        </section>
+
+        <div class="map-actions" aria-label="Controles do mapa">
+          <button id="basemapButton" class="map-button" type="button" title="Alternar mapa" aria-label="Alternar entre satélite e ruas">▦</button>
+          <button id="locateButton" class="map-button" type="button" title="Minha localização" aria-label="Mostrar minha localização">◎</button>
+          <button id="zoomInButton" class="map-button compact" type="button" aria-label="Aumentar zoom">+</button>
+          <button id="zoomOutButton" class="map-button compact" type="button" aria-label="Diminuir zoom">−</button>
+        </div>
+
+        <div id="connectionBadge" class="connection-badge" aria-live="polite">Imagem de satélite</div>
+
+        <article id="lotCard" class="lot-card" aria-live="polite" hidden>
+          <button id="closeLotCard" class="close-button" type="button" aria-label="Fechar informações">×</button>
+          <div class="lot-title-row">
+            <div>
+              <span class="eyebrow">LOTE SELECIONADO</span>
+              <h2 id="lotTitle">Quadra — · Lote —</h2>
+              <span id="statusBadge" class="status-badge status-nao_informado">Situação não informada</span>
+            </div>
+            <button id="favoriteButton" class="favorite-button" type="button" aria-label="Adicionar aos favoritos">☆</button>
+          </div>
+
+          <div class="metrics-grid">
+            <div><span>Área</span><strong id="lotArea">— m²</strong></div>
+            <div><span>Perímetro</span><strong id="lotPerimeter">— m</strong></div>
+            <div><span>Testada viária</span><strong id="lotFrontage">— m</strong></div>
+          </div>
+
+          <div class="info-row access-row">
+            <span>Ponto de navegação</span>
+            <strong id="lotAccess">—</strong>
+          </div>
+          <div class="info-row">
+            <span>Coordenada de destino</span>
+            <strong id="lotCoordinates">—</strong>
+          </div>
+          <div id="distanceRow" class="info-row" hidden>
+            <span>Distância da sua posição</span>
+            <strong id="lotDistance">—</strong>
+          </div>
+          <div id="commercialInfo" class="commercial-info" hidden></div>
+          <button id="technicalReviewButton" class="review-alert" type="button" hidden>⚠ Dados sinalizados para conferência técnica</button>
+
+          <div class="card-actions">
+            <a id="googleMapsButton" class="primary-button" href="#" target="_blank" rel="noopener">Ir pelo Google Maps</a>
+            <a id="wazeButton" class="secondary-button" href="#" target="_blank" rel="noopener">Abrir no Waze</a>
+            <button id="memorialButton" class="secondary-button" type="button">Memorial PDF</button>
+            <button id="detailsButton" class="secondary-button" type="button">Medidas e divisas</button>
+            <button id="paymentInfoButton" class="secondary-button" type="button" hidden>Formas de pagamento</button>
+            <button id="requestLotButton" class="request-button" type="button">Solicitar reserva ou indicar venda</button>
+            <button id="shareCardButton" class="share-card-button" type="button">Compartilhar ficha comercial</button>
+          </div>
+
+          <p class="technical-notice"><strong>Aviso técnico:</strong> a localização é para orientação comercial e navegação, não substituindo demarcação física ou levantamento técnico dos limites.</p>
+        </article>
+
+        <div id="offlineBanner" class="offline-banner" hidden>Sem internet. Lotes e memoriais continuam disponíveis, mas o satélite e a sincronização podem não carregar.</div>
+      </main>
+    </div>
+
+    <dialog id="savedDialog" class="sheet-dialog">
+      <div class="dialog-body">
+        <button class="close-button dialog-close" type="button" aria-label="Fechar">×</button>
+        <span class="eyebrow">ACESSO RÁPIDO</span>
+        <h2>Favoritos e histórico</h2>
+        <section>
+          <h3>Favoritos</h3>
+          <div id="favoritesList" class="lot-list"></div>
+        </section>
+        <section>
+          <div class="section-title-row">
+            <h3>Consultados recentemente</h3>
+            <button id="clearHistoryButton" class="text-button" type="button">Limpar</button>
+          </div>
+          <div id="historyList" class="lot-list"></div>
+        </section>
+      </div>
+    </dialog>
+
+    <dialog id="detailsDialog" class="sheet-dialog">
+      <div class="dialog-body">
+        <button class="close-button dialog-close" type="button" aria-label="Fechar">×</button>
+        <span class="eyebrow">DADOS DO MEMORIAL</span>
+        <h2 id="detailsTitle">Medidas e confrontações</h2>
+        <div id="dimensionsList" class="dimensions-list"></div>
+        <div id="reviewSection" class="review-section" hidden>
+          <h3>Conferência técnica</h3>
+          <ul id="reviewList"></ul>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="commercialDialog" class="sheet-dialog commercial-dialog">
+      <div class="dialog-body">
+        <button class="close-button dialog-close" type="button" aria-label="Fechar">×</button>
+        <span class="eyebrow">MINHA CONTA</span>
+        <h2 id="brokerAccountName">Corretor</h2>
+        <p class="dialog-intro">As disponibilidades, reservas, vendas e valores são publicados pela Central de Vendas.</p>
+
+        <section class="admin-card account-summary">
+          <div><span>Situação da conexão</span><strong id="brokerConnectionText">Aguardando conexão</strong></div>
+          <div><span>Última atualização</span><strong id="brokerLastSync">—</strong></div>
+          <div><span>Versão do app</span><strong id="brokerAppVersion">—</strong></div>
+          <button id="myRequestsButton" class="secondary-button full-width" type="button">Minhas solicitações</button>
+          <button id="myCommissionsButton" class="secondary-button full-width" type="button">Minhas vendas e comissões</button>
+        </section>
+
+        <section class="admin-card">
+          <button id="syncStatusButton" class="primary-button full-width" type="button">Atualizar agora</button>
+          <p id="syncStatusText" class="sync-status">Ainda não sincronizado.</p>
+        </section>
+
+        <section class="admin-card">
+          <h3>Alterar minha senha</h3>
+          <label><span>Nova senha</span><input id="brokerChangedPassword" type="password" autocomplete="new-password" minlength="6" /></label>
+          <button id="brokerChangePasswordButton" class="secondary-button full-width" type="button">Alterar senha</button>
+        </section>
+        <button id="brokerLogoutButton" class="logout-button full-width" type="button">Sair deste aparelho</button>
+
+        <section hidden aria-hidden="true">
+          <h3 id="adminLotTitle">Lote</h3>
+          <select id="adminStatusSelect" disabled><option value="nao_informado">Não informado</option></select>
+          <input id="adminValueInput" disabled /><textarea id="adminNoteInput" disabled></textarea>
+          <button id="saveLocalStatusButton" type="button" disabled></button>
+        </section>
+      </div>
+    </dialog>
+
+    <dialog id="requestDialog" class="sheet-dialog">
+      <div class="dialog-body">
+        <button class="close-button dialog-close" type="button" aria-label="Fechar">×</button>
+        <span class="eyebrow">ENVIAR PARA A CENTRAL</span><h2 id="requestLotTitle">Solicitar lote</h2>
+        <p>A Central de Vendas receberá um alerta e decidirá a situação oficial do lote.</p>
+        <label><span>O que deseja informar?</span><select id="requestTypeInput"><option value="reserva">Solicitar reserva</option><option value="indicacao_venda">Indicar possível venda</option></select></label>
+        <label><span>Nome do cliente</span><input id="requestCustomerInput" required /></label>
+        <label><span>Telefone do cliente, se disponível</span><input id="requestPhoneInput" inputmode="tel" /></label>
+        <label><span>Descrição ou observação</span><textarea id="requestNoteInput" rows="4"></textarea></label>
+        <button id="submitRequestButton" class="primary-button full-width" type="button">Enviar solicitação</button>
+        <div id="requestMessage" class="auth-message" hidden></div>
+      </div>
+    </dialog>
+
+    <dialog id="myRequestsDialog" class="sheet-dialog">
+      <div class="dialog-body">
+        <button class="close-button dialog-close" type="button" aria-label="Fechar">×</button>
+        <span class="eyebrow">ACOMPANHAMENTO</span><h2>Minhas solicitações</h2>
+        <div id="myRequestsList" class="lot-list"></div>
+      </div>
+    </dialog>
+
+    <dialog id="myCommissionsDialog" class="sheet-dialog">
+      <div class="dialog-body">
+        <button class="close-button dialog-close" type="button" aria-label="Fechar">×</button>
+        <span class="eyebrow">DESEMPENHO</span><h2>Minhas vendas e comissões</h2>
+        <div id="myCommissionsList" class="lot-list"></div>
+      </div>
+    </dialog>
+
+    <dialog id="installDialog" class="install-dialog">
+      <form method="dialog">
+        <button class="close-button" aria-label="Fechar">×</button>
+        <img src="assets/icons/icon-192.png" alt="" />
+        <h2>Instalar SKL Corretores Demo</h2>
+        <p id="installInstructions"></p>
+        <button class="primary-button" value="close">Entendi</button>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <div id="mapa3dOverlay" class="mapa3d-overlay" hidden>
+      <div class="mapa3d-topbar">
+        <div class="mapa3d-heading"><span class="eyebrow">PLANTA INTERATIVA</span><h2>Toque e arraste para girar</h2></div>
+        <button id="mapa3dCloseButton" class="close-button" type="button" aria-label="Fechar planta 3D">×</button>
+      </div>
+      <div id="mapa3dContainer" class="mapa3d-container"></div>
+      <div id="mapa3dLoading" class="mapa3d-loading"><span class="mapa3d-spinner"></span>Carregando planta 3D…</div>
+      <div class="mapa3d-legend">
+        <span><i style="background:#2f8a56"></i>Disponível</span>
+        <span><i style="background:#d59a22"></i>Reservado</span>
+        <span><i style="background:#bd5147"></i>Vendido</span>
+        <span><i style="background:#477fa4"></i>Bloqueado</span>
+      </div>
+    </div>
+
+    <div id="paymentInfoOverlay" class="payment-info-overlay" hidden>
+      <div class="payment-info-topbar">
+        <div class="payment-info-heading"><span class="eyebrow">DADOS DO EMPREENDIMENTO</span><h2>Formas de pagamento</h2></div>
+        <button id="paymentInfoCloseButton" class="close-button" type="button" aria-label="Fechar formas de pagamento">×</button>
+      </div>
+      <div id="paymentInfoContent" class="payment-info-body"></div>
+      <div id="paymentInfoLoading" class="payment-info-loading"><span class="mapa3d-spinner"></span>Carregando…</div>
+    </div>
+
+    <noscript>Este aplicativo precisa do JavaScript ativado para exibir o mapa.</noscript>
+    <script src="vendor/leaflet/leaflet.js"></script>
+    <script src="vendor/supabase/supabase.js"></script>
+    <script src="vendor/three/three.min.js"></script>
+    <script src="vendor/three/OrbitControls.js"></script>
+    <script src="vendor/three/mapa3d.js"></script>
+    <script src="data/lotes.js"></script>
+    <script src="data/status-config.js"></script>
+    <script src="app.js"></script>
+    <script src="online.js"></script>
+  </body>
+</html>
