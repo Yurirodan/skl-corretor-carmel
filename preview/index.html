@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>App Corretor Carmel — Prévia</title>
+<meta name="description" content="Pré-visualização visual das telas do App Corretor da Carmel Beach Residence, sem necessidade de login." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏖️</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  // Prévia com validade de 24h a partir da publicação — depois disso,
+  // mostra um aviso de expirado em vez do conteúdo. Checado no <head>,
+  // antes do corpo renderizar, pra não piscar o conteúdo real primeiro.
+  var PREVIEW_EXPIRES_AT = 1789397918806; // 2026-09-14 10:58 (24h após publicar)
+  if (Date.now() > PREVIEW_EXPIRES_AT) {
+    document.documentElement.classList.add("preview-expired");
+  }
+</script>
+<style>
+  .preview-expired #app { display: none; }
+  #expired-notice { display: none; }
+  .preview-expired #expired-notice { display: flex; }
+  :root {
+    color-scheme: light;
+    --ink: #0C2A30;
+    --ink-soft: #3E5A5F;
+    --surface: #FBFAF6;
+    --surface-alt: #F0F5F5;
+    --card: #FFFFFF;
+    --teal: #0C3E4A;
+    --teal-deep: #08262E;
+    --ice: #C8DCDD;
+    --line: #DAE5E4;
+    --accent-warm: #B08D57;
+    --shadow: 0 24px 60px -30px rgba(8,38,46,0.35);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  img { max-width: 100%; }
+  body {
+    background: var(--surface);
+    color: var(--ink);
+    font-family: "Work Sans", -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: "Fraunces", Georgia, serif; font-weight: 500; text-wrap: balance; margin: 0; }
+  p { margin: 0; }
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ice);
+  }
+  .eyebrow.dark-on-light { color: var(--teal); }
+
+  header {
+    background: linear-gradient(160deg, var(--teal-deep), var(--teal) 130%);
+    color: #EFF6F6;
+    padding: 56px 24px 64px;
+  }
+  .header-inner {
+    max-width: 880px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  header h1 {
+    font-size: clamp(30px, 5vw, 46px);
+    line-height: 1.08;
+    color: #FFFFFF;
+  }
+  header .lede {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #CFE2E2;
+    max-width: 58ch;
+  }
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.22);
+    color: #EFF6F6;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .badge b { color: #B9E0C9; font-size: 15px; }
+
+  main { max-width: 1040px; margin: 0 auto; padding: 0 24px 88px; }
+  section { padding-top: 64px; }
+  section > .section-head { max-width: 640px; margin-bottom: 28px; display: flex; flex-direction: column; gap: 8px; }
+  section h2 { font-size: clamp(22px, 3vw, 28px); color: var(--ink); }
+  section .section-head p { color: var(--ink-soft); font-size: 15px; line-height: 1.6; }
+
+  .browser-frame {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .browser-chrome {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--surface-alt);
+    border-bottom: 1px solid var(--line);
+  }
+  .browser-dots { display: flex; gap: 6px; }
+  .browser-dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+  .browser-url {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    font-family: "Work Sans", sans-serif;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .browser-url b { color: var(--ink); font-weight: 600; }
+  .browser-frame img { display: block; width: 100%; height: auto; }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 40px;
+  }
+  .step {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .step .num {
+    font-family: "Fraunces", serif;
+    font-size: 26px;
+    color: var(--accent-warm);
+  }
+  .step h3 { font-size: 16px; color: var(--ink); }
+  .step p { font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; }
+
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+    align-items: start;
+  }
+  .gallery-item { display: flex; flex-direction: column; gap: 12px; }
+  .phone-frame {
+    background: var(--teal-deep);
+    border-radius: 22px;
+    padding: 8px;
+    box-shadow: var(--shadow);
+  }
+  .phone-frame .screen {
+    border-radius: 15px;
+    overflow: hidden;
+    background: var(--card);
+  }
+  .phone-frame img { display: block; width: 100%; height: auto; }
+  .gallery-caption .eyebrow { color: var(--accent-warm); }
+  .gallery-caption h3 { font-size: 15.5px; margin-top: 3px; color: var(--ink); }
+  .gallery-caption p { font-size: 13px; color: var(--ink-soft); line-height: 1.5; margin-top: 4px; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 32px 24px 48px;
+  }
+  .footer-inner {
+    max-width: 1040px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  footer .disclaimer { font-size: 12.5px; color: var(--ink-soft); max-width: 56ch; line-height: 1.6; }
+  footer .signature { font-family: "Fraunces", serif; font-size: 15px; color: var(--ink); white-space: nowrap; }
+  footer .signature span { display: block; font-family: "Work Sans", sans-serif; font-size: 11.5px; color: var(--ink-soft); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px; }
+
+  @media (max-width: 860px) {
+    .gallery { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .steps { grid-template-columns: 1fr; }
+    .gallery { grid-template-columns: 1fr 1fr; gap: 16px; }
+    header { padding: 44px 18px 52px; }
+    section { padding-top: 48px; }
+  }
+
+  #expired-notice {
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, var(--teal-deep), var(--teal) 130%);
+    padding: 24px;
+  }
+  #expired-notice > div {
+    max-width: 420px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  #expired-notice h1 { color: #FFFFFF; font-size: 28px; }
+  #expired-notice p { color: #CFE2E2; font-size: 15px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div id="expired-notice">
+  <div>
+    <span class="eyebrow">Pré-visualização</span>
+    <h1>Este link expirou</h1>
+    <p>Esta prévia tinha validade de 24 horas. Peça um novo link atualizado à SKL Soluções Digitais.</p>
+  </div>
+</div>
+
+<div id="app">
+
+<header>
+  <div class="header-inner">
+    <span class="eyebrow">Pré-visualização · equipe Urb Loteamentos</span>
+    <h1>App Corretor — Carmel Beach Residence</h1>
+    <p class="lede">Um passeio pelas telas reais do sistema que os corretores da Urb vão usar para consultar lotes, reservar e acompanhar comissões — direto do navegador, sem instalar nada.</p>
+    <div class="badge-row">
+      <span class="badge"><b>✓</b> Sem necessidade de cadastro para esta visualização</span>
+      <span class="badge"><b>✓</b> Funciona em iPhone, Android e computador</span>
+      <span class="badge"><b>✓</b> Dados sincronizados com o CV CRM em tempo real</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section>
+    <div class="section-head">
+      <span class="eyebrow dark-on-light">Acesso</span>
+      <h2>Um link, aberto no navegador</h2>
+      <p>Nenhum aplicativo para baixar — o corretor abre o endereço no Safari ou Chrome e já está dentro do sistema.</p>
+    </div>
+    <div class="browser-frame">
+      <div class="browser-chrome">
+        <div class="browser-dots"><span></span><span></span><span></span></div>
+        <div class="browser-url">🔒 <b>carmelbeachresidence.com.br</b> — corretor</div>
+      </div>
+      <img src="img/browser-mapa.png" alt="Mapa interativo dos lotes aberto num navegador de computador, mostrando o Localizador do Corretor e a imagem de satélite do empreendimento" />
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <span class="num">01</span>
+        <h3>Abrir o link</h3>
+        <p>Mesmo endereço para todos os corretores, em qualquer aparelho.</p>
+      </div>
+      <div class="step">
+        <span class="num">02</span>
+        <h3>Entrar com e-mail e senha</h3>
+        <p>Acesso individual — cada corretor com o próprio login.</p>
+      </div>
+      <div class="step">
+        <span class="num">03</span>
+        <h3>Consultar e reservar</h3>
+        <p>Mapa, disponibilidade e formas de pagamento sempre atualizados.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <span class="eyebrow dark-on-light">Telas do sistema</span>
+      <h2>O que o corretor encontra lá dentro</h2>
+      <p>Capturas reais, feitas direto do sistema em funcionamento — não são montagens.</p>
+    </div>
+
+    <div class="gallery">
+      <div class="gallery-item">
+        <div class="phone-frame"><div class="screen"><img src="img/tela-login.png" alt="Tela de acesso do corretor, com campos de e-mail e senha" /></div></div>
+        <div class="gallery-caption">
+          <span class="eyebrow">Acesso</span>
+          <h3>Login individual</h3>
+          <p>Cada corretor entra com seu próprio e-mail e senha.</p>
+        </div>
+      </div>
+      <div class="gallery-item">
+        <div class="phone-frame"><div class="screen"><img src="img/tela-mapa.png" alt="Mapa de satélite do loteamento com o Localizador do Corretor e legenda de situação dos lotes" /></div></div>
+        <div class="gallery-caption">
+          <span class="eyebrow">Mapa</span>
+          <h3>Localizador de lotes</h3>
+          <p>Imagem de satélite real, com situação de cada lote por cor.</p>
+        </div>
+      </div>
+      <div class="gallery-item">
+        <div class="phone-frame"><div class="screen"><img src="img/tela-planta3d.png" alt="Planta 3D interativa do loteamento, com os lotes coloridos por situação" /></div></div>
+        <div class="gallery-caption">
+          <span class="eyebrow">Planta 3D</span>
+          <h3>Vista interativa</h3>
+          <p>Corretor gira e inclina a planta pra mostrar ao cliente.</p>
+        </div>
+      </div>
+      <div class="gallery-item">
+        <div class="phone-frame"><div class="screen"><img src="img/tela-pagamento.png" alt="Painel de formas de pagamento e dados bancários" /></div></div>
+        <div class="gallery-caption">
+          <span class="eyebrow">Fechamento</span>
+          <h3>Formas de pagamento</h3>
+          <p>Dados bancários e condições visíveis na hora da negociação.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <p class="disclaimer">Esta página é uma pré-visualização visual do sistema, feita para a equipe da Urb conhecer a interface antes do uso — não substitui o acesso real, que exige login individual do corretor.</p>
+    <p class="signature">SKL Soluções Digitais<span>Preparado para Urb Loteamentos</span></p>
+  </div>
+</footer>
+
+</div>
+
+</body>
+</html>
