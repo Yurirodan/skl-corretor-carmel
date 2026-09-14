@@ -1,4 +1,4 @@
-const CACHE_NAME = "skl-corretores-v3";
+const CACHE_NAME = "skl-corretores-v4";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -41,16 +41,20 @@ self.addEventListener("fetch", (event) => {
   const isLeaflet = url.hostname === "unpkg.com";
   if (!isLocal && !isLeaflet) return;
 
+  // Rede primeiro, cache só como reserva pra quando estiver offline — o
+  // padrão antigo (cache primeiro, atualiza em segundo plano) deixava o
+  // corretor preso numa versão antiga do app.js/styles.css por tempo
+  // indeterminado, mesmo depois de publicarmos uma correção e ele recarregar
+  // a página, porque só o index.html ia pela rede primeiro.
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request).then((response) => {
+    fetch(request)
+      .then((response) => {
         if (response.ok || response.type === "opaque") {
           const copy = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
         }
         return response;
-      });
-      return cached || network;
-    }),
+      })
+      .catch(() => caches.match(request)),
   );
 });

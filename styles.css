@@ -76,17 +76,21 @@ button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-
   z-index: 900;
   top: calc(84px + env(safe-area-inset-top));
   left: 14px;
-  width: 52px;
-  height: 52px;
-  border: 1px solid rgba(255,255,255,.7);
-  border-radius: 16px;
-  background: rgba(255,255,255,.95);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(14px);
-  color: var(--navy-deep);
-  font-size: 23px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 16px 0 13px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--navy), var(--navy-soft));
+  box-shadow: 0 10px 26px rgba(6,63,80,.38);
+  color: var(--white);
+  font-size: 19px;
+  font-weight: 850;
   cursor: pointer;
 }
+.search-toggle-button span:last-child { font-size: 13px; }
 .search-card {
   position: fixed;
   z-index: 900;
@@ -412,7 +416,7 @@ summary { color: var(--navy); cursor: pointer; font-weight: 850; }
   .header-button { width: 38px; justify-content: center; padding: 7px; }
   .header-button-label { display: none; }
   .search-card { top: calc(76px + env(safe-area-inset-top)); padding: 13px; }
-  .search-toggle-button { top: calc(76px + env(safe-area-inset-top)); width: 46px; height: 46px; }
+  .search-toggle-button { top: calc(76px + env(safe-area-inset-top)); height: 44px; font-size: 17px; }
   .search-heading h1 { font-size: 21px; }
   .search-form { grid-template-columns: 1fr 1fr; }
   .search-form .primary-button { grid-column: 1 / -1; }
