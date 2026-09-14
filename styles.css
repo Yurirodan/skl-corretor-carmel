@@ -65,6 +65,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-
   font-weight: 800;
 }
 .header-button:first-child span:first-child { color: #ffe09f; }
+.header-button-label-compact { display: none; font-size: 11px; font-weight: 800; }
 
 #map { z-index: 0; background: #cad4d2; }
 .leaflet-container { font-family: inherit; }
@@ -415,6 +416,8 @@ summary { color: var(--navy); cursor: pointer; font-weight: 850; }
   .brand-kicker, .brand-subtitle { font-size: 6.5px; }
   .header-button { width: 38px; justify-content: center; padding: 7px; }
   .header-button-label { display: none; }
+  .header-button-label-compact { display: inline; }
+  #mapa3dButton { width: auto; gap: 4px; padding: 7px 11px; }
   .search-card { top: calc(76px + env(safe-area-inset-top)); padding: 13px; }
   .search-toggle-button { top: calc(76px + env(safe-area-inset-top)); height: 44px; font-size: 17px; }
   .search-heading h1 { font-size: 21px; }
