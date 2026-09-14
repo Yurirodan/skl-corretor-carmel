@@ -10,6 +10,8 @@
         quadra: $("quadraSelect"),
         lote: $("loteSelect"),
         form: $("lotSearchForm"),
+        searchCard: $("searchCard"),
+        searchToggle: $("searchToggleButton"),
         lotCard: $("lotCard"),
         lotTitle: $("lotTitle"),
         lotArea: $("lotArea"),
@@ -281,8 +283,14 @@
             return;
         }
         selectLot(quadra, lote, true);
+        toggleSearchCard(false);
     });
-    $("showAllButton").addEventListener("click", showAllLots);
+    elements.searchToggle.addEventListener("click", () => toggleSearchCard(true));
+    $("closeSearchButton").addEventListener("click", () => toggleSearchCard(false));
+    $("showAllButton").addEventListener("click", () => {
+        showAllLots();
+        toggleSearchCard(false);
+    });
     $("closeLotCard").addEventListener("click", clearSelection);
     $("basemapButton").addEventListener("click", toggleBasemap);
     $("locateButton").addEventListener("click", locateUser);
@@ -385,6 +393,10 @@
         [ ...quadras.keys() ].sort((a, b) => a - b).forEach(quadra => {
             elements.quadra.add(new Option(`Quadra ${quadra}`, String(quadra)));
         });
+    }
+    function toggleSearchCard(open) {
+        elements.searchCard.hidden = !open;
+        elements.searchToggle.hidden = open;
     }
     function populateLots(quadra, selectedLote = null) {
         elements.lote.replaceChildren(new Option("Selecione", ""));

@@ -71,6 +71,22 @@ button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-
 .leaflet-control-attribution { font-size: 9px; max-width: 74vw; white-space: normal; line-height: 1.2; }
 .leaflet-bottom.leaflet-right { bottom: max(4px, env(safe-area-inset-bottom)); }
 
+.search-toggle-button {
+  position: fixed;
+  z-index: 900;
+  top: calc(84px + env(safe-area-inset-top));
+  left: 14px;
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgba(255,255,255,.7);
+  border-radius: 16px;
+  background: rgba(255,255,255,.95);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+  color: var(--navy-deep);
+  font-size: 23px;
+  cursor: pointer;
+}
 .search-card {
   position: fixed;
   z-index: 900;
@@ -85,6 +101,18 @@ button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-
   backdrop-filter: blur(14px);
 }
 .search-heading, .lot-title-row, .section-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.search-heading-actions { display: flex; align-items: center; gap: 4px; flex: none; }
+.search-close-button {
+  border: 0;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--muted);
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+}
 .eyebrow { display: block; color: var(--navy-soft); font-size: 9.5px; font-weight: 850; letter-spacing: .15em; }
 h1, h2, h3 { color: var(--navy-deep); }
 h1, h2 { margin: 3px 0 0; line-height: 1.08; }
@@ -384,6 +412,7 @@ summary { color: var(--navy); cursor: pointer; font-weight: 850; }
   .header-button { width: 38px; justify-content: center; padding: 7px; }
   .header-button-label { display: none; }
   .search-card { top: calc(76px + env(safe-area-inset-top)); padding: 13px; }
+  .search-toggle-button { top: calc(76px + env(safe-area-inset-top)); width: 46px; height: 46px; }
   .search-heading h1 { font-size: 21px; }
   .search-form { grid-template-columns: 1fr 1fr; }
   .search-form .primary-button { grid-column: 1 / -1; }

@@ -74,13 +74,20 @@
           <span><i class="dot bloqueado"></i>Bloqueado</span>
         </div>
 
-        <section class="search-card" aria-label="Pesquisa de lote">
+        <button id="searchToggleButton" class="search-toggle-button" type="button" aria-label="Abrir localizador de lote" title="Localizador do Corretor">
+          <span aria-hidden="true">⌖</span>
+        </button>
+
+        <section id="searchCard" class="search-card" aria-label="Pesquisa de lote" hidden>
           <div class="search-heading">
             <div>
               <span class="eyebrow">LOCALIZADOR DO CORRETOR</span>
               <h1>Encontre um lote</h1>
             </div>
-            <button id="showAllButton" class="text-button" type="button">Ver todos</button>
+            <div class="search-heading-actions">
+              <button id="showAllButton" class="text-button" type="button">Ver todos</button>
+              <button id="closeSearchButton" class="search-close-button" type="button" aria-label="Fechar localizador">×</button>
+            </div>
           </div>
 
           <form id="lotSearchForm" class="search-form">
