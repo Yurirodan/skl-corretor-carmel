@@ -1,4 +1,4 @@
-const CACHE_NAME = "skl-corretores-v4";
+const CACHE_NAME = "skl-corretores-v5";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -32,8 +32,16 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (request.method !== "GET") return;
 
+  // "cache: no-store" nas duas chamadas de fetch abaixo é essencial — sem
+  // isso, mesmo pedindo a rede "primeiro", o navegador pode responder direto
+  // do cache HTTP dele (o GitHub Pages manda Cache-Control: max-age=600 em
+  // todo arquivo estático) sem nem chegar a sair pra rede de verdade. Foi
+  // exatamente isso que fez o corretor continuar vendo uma versão antiga do
+  // app mesmo depois de recarregar a página várias vezes.
   if (request.mode === "navigate") {
-    event.respondWith(fetch(request).catch(() => caches.match("./index.html")));
+    event.respondWith(
+      fetch(request.url, { cache: "no-store" }).catch(() => caches.match("./index.html")),
+    );
     return;
   }
 
@@ -41,13 +49,8 @@ self.addEventListener("fetch", (event) => {
   const isLeaflet = url.hostname === "unpkg.com";
   if (!isLocal && !isLeaflet) return;
 
-  // Rede primeiro, cache só como reserva pra quando estiver offline — o
-  // padrão antigo (cache primeiro, atualiza em segundo plano) deixava o
-  // corretor preso numa versão antiga do app.js/styles.css por tempo
-  // indeterminado, mesmo depois de publicarmos uma correção e ele recarregar
-  // a página, porque só o index.html ia pela rede primeiro.
   event.respondWith(
-    fetch(request)
+    fetch(request.url, { cache: "no-store" })
       .then((response) => {
         if (response.ok || response.type === "opaque") {
           const copy = response.clone();
