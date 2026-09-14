@@ -234,6 +234,10 @@
         <label><span>O que deseja informar?</span><select id="requestTypeInput"><option value="reserva">Solicitar reserva</option><option value="indicacao_venda">Indicar possível venda</option></select></label>
         <label><span>Nome do cliente</span><input id="requestCustomerInput" required /></label>
         <label><span>Telefone do cliente, se disponível</span><input id="requestPhoneInput" inputmode="tel" /></label>
+        <label><span>CPF do cliente, se disponível</span><input id="requestCpfInput" inputmode="numeric" placeholder="000.000.000-00" /></label>
+        <label><span>E-mail do cliente, se disponível</span><input id="requestEmailInput" type="email" placeholder="cliente@email.com" /></label>
+        <label><span>Endereço do cliente, se disponível</span><input id="requestAddressInput" placeholder="Rua, número, bairro, cidade" /></label>
+        <label><span>Forma de pagamento</span><select id="requestPaymentPlanInput"><option value="">Nenhuma forma cadastrada ainda</option></select></label>
         <label><span>Descrição ou observação</span><textarea id="requestNoteInput" rows="4"></textarea></label>
         <button id="submitRequestButton" class="primary-button full-width" type="button">Enviar solicitação</button>
         <div id="requestMessage" class="auth-message" hidden></div>

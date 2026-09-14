@@ -5,7 +5,7 @@
     const SUPABASE_ANON_KEY = "sb_publishable_mqppAm9n79xl6rYafzXyNQ_mGVoX3Vd";
     const EMPREENDIMENTO_SLUG = "skl-demo";
     const ORIGEM = "app_corretor";
-    const APP_VERSION = "3.0.19";
+    const APP_VERSION = "3.0.21";
     if ($("brokerAppVersion")) $("brokerAppVersion").textContent = APP_VERSION;
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
@@ -235,6 +235,34 @@
             setMessage($("brokerActivationMessage"), traduzErro(error.message));
         }
     });
+    async function popularFormasPagamento() {
+        const select = $("requestPaymentPlanInput");
+        if (!select) return;
+        select.innerHTML = "";
+        try {
+            const {data: planos, error: planosError} = await sb.from("planos_pagamento").select("id, nome").eq("empreendimento_id", empreendimentoId).eq("ativo", true).order("criado_em");
+            if (planosError) throw planosError;
+            if (!planos || !planos.length) {
+                select.innerHTML = "<option value=\"\">Nenhuma forma de pagamento cadastrada ainda</option>";
+                select.disabled = true;
+                return;
+            }
+            select.disabled = false;
+            const opcaoVazia = document.createElement("option");
+            opcaoVazia.value = "";
+            opcaoVazia.textContent = "Selecione a forma de pagamento";
+            select.appendChild(opcaoVazia);
+            planos.forEach(plano => {
+                const opcao = document.createElement("option");
+                opcao.value = plano.id;
+                opcao.textContent = plano.nome;
+                select.appendChild(opcao);
+            });
+        } catch (error) {
+            select.innerHTML = "<option value=\"\">Nenhuma forma de pagamento cadastrada ainda</option>";
+            select.disabled = true;
+        }
+    }
     $("requestLotButton").addEventListener("click", () => {
         const lot = window.SKLApp.getSelectedLot();
         if (!lot) return window.SKLApp.showToast("Selecione um lote primeiro.");
@@ -242,6 +270,7 @@
         if ([ "vendido", "bloqueado" ].includes(lot.record.status)) return window.SKLApp.showToast("Este lote está indisponível.");
         $("requestLotTitle").textContent = `Quadra ${lot.quadra} · Lote ${lot.lote}`;
         setMessage($("requestMessage"), "");
+        popularFormasPagamento();
         requestDialog.showModal();
     });
     $("submitRequestButton").addEventListener("click", async () => {
@@ -252,18 +281,27 @@
         try {
             const {data: loteRow, error: loteError} = await sb.from("lotes").select("id").eq("empreendimento_id", empreendimentoId).eq("chave", lot.lot_key).single();
             if (loteError || !loteRow) throw new Error("Lote não encontrado.");
+            const paymentSelect = $("requestPaymentPlanInput");
+            const formaPagamentoId = paymentSelect && paymentSelect.value ? paymentSelect.value : null;
+            const formaPagamentoNome = formaPagamentoId ? paymentSelect.options[paymentSelect.selectedIndex].textContent : null;
             const {error: error} = await sb.rpc("criar_solicitacao", {
                 p_lote_id: loteRow.id,
                 p_tipo: $("requestTypeInput").value,
                 p_cliente_nome: customer,
                 p_cliente_telefone: $("requestPhoneInput").value,
                 p_observacao: $("requestNoteInput").value,
-                p_origem_offline: false
+                p_origem_offline: false,
+                p_cliente_cpf: $("requestCpfInput").value,
+                p_cliente_email: $("requestEmailInput").value,
+                p_cliente_endereco: $("requestAddressInput").value,
+                p_forma_pagamento_id: formaPagamentoId,
+                p_forma_pagamento_nome: formaPagamentoNome
             });
             if (error) throw error;
-            [ $("requestCustomerInput"), $("requestPhoneInput"), $("requestNoteInput") ].forEach(input => {
+            [ $("requestCustomerInput"), $("requestPhoneInput"), $("requestCpfInput"), $("requestEmailInput"), $("requestAddressInput"), $("requestNoteInput") ].forEach(input => {
                 input.value = "";
             });
+            if (paymentSelect) paymentSelect.selectedIndex = 0;
             requestDialog.close();
             window.SKLApp.showToast("Solicitação enviada à Central de Vendas.");
         } catch (error) {
