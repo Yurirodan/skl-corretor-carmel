@@ -5,7 +5,7 @@
     const SUPABASE_ANON_KEY = "sb_publishable_mqppAm9n79xl6rYafzXyNQ_mGVoX3Vd";
     const EMPREENDIMENTO_SLUG = "skl-demo";
     const ORIGEM = "app_corretor";
-    const APP_VERSION = "3.0.23";
+    const APP_VERSION = "3.0.25";
     if ($("brokerAppVersion")) $("brokerAppVersion").textContent = APP_VERSION;
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
@@ -263,21 +263,148 @@
             select.disabled = true;
         }
     }
+    // ---- Reservas: trava de duplo envio, prazo do pedido, reserva com contagem e bloqueio ----
+    let reservaEstados = [];
+    let reservaOffsetMs = 0;
+    let reservaTimer = null;
+    let reservaEmCurso = false;
+    let reservaDeNovo = false;
+    let requestSubmitting = false;
+    async function carregarEstadoReservas() {
+        if (reservaEmCurso) { reservaDeNovo = true; return; }
+        reservaEmCurso = true;
+        try {
+            const {data: data, error: error} = await sb.rpc("estado_reservas");
+            if (error) throw error;
+            reservaEstados = data || [];
+            if (reservaEstados.length) reservaOffsetMs = Date.parse(reservaEstados[0].agora) - Date.now();
+        } catch {} finally {
+            reservaEmCurso = false;
+        }
+        aplicarEstadoReservas();
+        if (reservaDeNovo) { reservaDeNovo = false; carregarEstadoReservas(); }
+    }
+    function estadoDoAlvo(tipoAlvo, id) {
+        const linhas = reservaEstados.filter(l => tipoAlvo === "lote" ? l.lote_chave === id : l.unidade_id === id);
+        return [ "reservado", "pendente", "bloqueado" ].map(e => linhas.find(l => l.estado === e)).find(Boolean) || null;
+    }
+    function reservaAgora() {
+        return Date.now() + reservaOffsetMs;
+    }
+    function formatarContagem(ms) {
+        const total = Math.max(0, Math.ceil(ms / 1000));
+        const h = Math.floor(total / 3600), m = Math.floor(total % 3600 / 60), s = total % 60;
+        const dois = n => String(n).padStart(2, "0");
+        return h > 0 ? h + ":" + dois(m) + ":" + dois(s) : dois(m) + ":" + dois(s);
+    }
+    function mensagemEstadoReserva(est) {
+        const resto = est.ate ? Date.parse(est.ate) - reservaAgora() : null;
+        if (est.estado === "reservado") return "Reservado para você — restam " + formatarContagem(resto) + " para juntar documentos e concluir.";
+        if (est.estado === "pendente") return resto === null ? "Pedido enviado — aguardando a Central." : "Pedido enviado — aguardando a Central (libera em " + formatarContagem(resto) + " se não houver resposta).";
+        return "Reserva bloqueada para você neste imóvel até " + new Date(est.ate).toLocaleString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+        }) + " (a Central pode liberar).";
+    }
+    function pintarBannerReserva(el, est) {
+        if (!el) return;
+        if (!est) {
+            el.hidden = true;
+            el.textContent = "";
+            return;
+        }
+        el.hidden = false;
+        el.className = "reserva-banner reserva-" + est.estado;
+        el.textContent = mensagemEstadoReserva(est);
+    }
+    function aplicarEstadoReservas() {
+        const lote = window.SKLApp?.getSelectedLot?.();
+        const estLote = lote ? estadoDoAlvo("lote", lote.lot_key) : null;
+        const btnLote = $("requestLotButton");
+        if (btnLote) btnLote.hidden = !!(estLote && estLote.estado !== "bloqueado");
+        pintarBannerReserva($("reservaBannerLote"), estLote);
+        const unidade = window.SKLVertical?.getSelectedUnit?.();
+        const dlg = $("unitDialog");
+        if (unidade && dlg && dlg.open) {
+            const est = estadoDoAlvo("unidade", unidade.id);
+            const btnUn = $("unitRequestButton");
+            if (btnUn) btnUn.hidden = unidade.status !== "disponivel" || !!est;
+            pintarBannerReserva($("reservaBannerUnidade"), est);
+        }
+        const precisaTimer = reservaEstados.some(l => l.ate);
+        if (precisaTimer && !reservaTimer) reservaTimer = setInterval(tickReservas, 1000);
+        if (!precisaTimer && reservaTimer) {
+            clearInterval(reservaTimer);
+            reservaTimer = null;
+        }
+    }
+    function tickReservas() {
+        if (reservaEstados.some(l => l.ate && Date.parse(l.ate) <= reservaAgora())) {
+            carregarEstadoReservas();
+            return;
+        }
+        aplicarEstadoReservas();
+    }
+    function prepararTiposDoPedido(est) {
+        const sel = $("requestTypeInput");
+        const opt = sel && sel.querySelector('option[value="reserva"]');
+        if (!opt) return;
+        const bloqueado = !!(est && est.estado === "bloqueado");
+        opt.disabled = bloqueado;
+        sel.value = bloqueado ? "indicacao_venda" : "reserva";
+    }
+    window.SKLReserva = {
+        atualizar: aplicarEstadoReservas,
+        recarregar: carregarEstadoReservas
+    };
+    let reservaCanal = null;
+    sb.auth.onAuthStateChange((evento, sessao) => {
+        if (reservaCanal) {
+            sb.removeChannel(reservaCanal);
+            reservaCanal = null;
+        }
+        if (!sessao || !sessao.user) {
+            reservaEstados = [];
+            aplicarEstadoReservas();
+            return;
+        }
+        const uid = sessao.user.id;
+        reservaCanal = sb.channel("corretor-reservas").on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "solicitacoes",
+            filter: "criado_por=eq." + uid
+        }, () => carregarEstadoReservas()).on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "reserva_bloqueios",
+            filter: "corretor_id=eq." + uid
+        }, () => carregarEstadoReservas()).subscribe();
+        setTimeout(carregarEstadoReservas, 0);
+    });
     $("requestLotButton").addEventListener("click", () => {
         const lot = window.SKLApp.getSelectedLot();
         if (!lot) return window.SKLApp.showToast("Selecione um lote primeiro.");
         if (!online) return window.SKLApp.showToast("É preciso estar conectado para enviar uma solicitação.");
         if ([ "vendido", "bloqueado" ].includes(lot.record.status)) return window.SKLApp.showToast("Este lote está indisponível.");
+        const estLote = estadoDoAlvo("lote", lot.lot_key);
+        if (estLote && estLote.estado !== "bloqueado") return window.SKLApp.showToast(mensagemEstadoReserva(estLote));
         $("requestLotTitle").textContent = `Quadra ${lot.quadra} · Lote ${lot.lote}`;
+        prepararTiposDoPedido(estadoDoAlvo("lote", lot.lot_key));
         setMessage($("requestMessage"), "");
         popularFormasPagamento();
         requestDialog.showModal();
     });
     $("submitRequestButton").addEventListener("click", async () => {
+        if (requestSubmitting) return;
         const lot = window.SKLApp.getSelectedLot();
         if (!lot) return;
         const customer = $("requestCustomerInput").value.trim();
         if (customer.length < 3) return setMessage($("requestMessage"), "Informe o nome do cliente.");
+        requestSubmitting = true;
+        $("submitRequestButton").disabled = true;
         try {
             const {data: loteRow, error: loteError} = await sb.from("lotes").select("id").eq("empreendimento_id", empreendimentoId).eq("chave", lot.lot_key).single();
             if (loteError || !loteRow) throw new Error("Lote não encontrado.");
@@ -306,13 +433,18 @@
             window.SKLApp.showToast("Solicitação enviada à Central de Vendas.");
         } catch (error) {
             setMessage($("requestMessage"), traduzErro(error.message));
+        } finally {
+            requestSubmitting = false;
+            $("submitRequestButton").disabled = false;
+            carregarEstadoReservas();
         }
     });
     function requestStatusLabel(status) {
         return {
             pendente: "Pendente",
             aprovada: "Aprovada",
-            rejeitada: "Rejeitada"
+            rejeitada: "Rejeitada",
+            expirada: "Expirada"
         }[status] || status;
     }
     function requestTypeLabel(type) {
@@ -427,6 +559,8 @@
         });
     }
     function traduzErro(message) {
+        const codigo = /^(REQUEST_PENDING|RESERVA_BLOQUEADA|RESERVA_ATIVA|REQUEST_EXPIRED):\s*(.*)$/s.exec(message || "");
+        if (codigo) return codigo[2];
         const mapa = {
             "Invalid login credentials": "E-mail ou senha incorretos.",
             "Email not confirmed": "E-mail ainda não confirmado.",

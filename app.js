@@ -425,6 +425,7 @@
         populateLots(quadra, lote);
         recordHistory(key);
         updateLotCard(feature);
+        window.SKLReserva?.atualizar?.();
         updateAdminPanel();
         updateLotUrl(quadra, lote);
         if (moveMap) {

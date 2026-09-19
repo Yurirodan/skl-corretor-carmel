@@ -1,4 +1,4 @@
-const CACHE_NAME = "skl-corretores-v5";
+const CACHE_NAME = "skl-corretores-v6";
 const CORE_ASSETS = [
   "./",
   "./index.html",

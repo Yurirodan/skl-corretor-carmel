@@ -521,3 +521,11 @@ summary { color: var(--navy); cursor: pointer; font-weight: 850; }
 .banking-info-badge{display:inline-block;background:#eef6f9;color:#1f5c6b;border-radius:99px;padding:3px 10px;font-size:10px;font-weight:800;letter-spacing:.04em;margin-bottom:6px}
 .banking-info-card p{margin:0;font-size:12px;color:var(--ink);line-height:1.6}
 #paymentInfoButton[hidden]{display:none!important}
+
+/* reservas: aviso de pedido pendente / reserva com contagem / bloqueio */
+.reserva-banner{margin:8px 0;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;line-height:1.35}
+.reserva-banner[hidden]{display:none}
+.reserva-pendente{background:#fff2d8;color:#76500b;border:1px solid #efd59f}
+.reserva-reservado{background:#dff4e8;color:#1d5c3a;border:1px solid #a8dcbe}
+.reserva-bloqueado{background:#f7e3e1;color:#8c3a33;border:1px solid #e6b8b3}
+.request-button[hidden],.unit-action-btn[hidden]{display:none!important}
